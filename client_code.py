@@ -22,7 +22,7 @@ t2 = threading.Thread(target=wait_massage)
 t2.start()
 
 while connect:
-    with open('client_massage', 'r') as file_read:
+    with open('import_massage', 'r') as file_read:
         lines = file_read.readlines()
         for line in lines:
             if line != '':

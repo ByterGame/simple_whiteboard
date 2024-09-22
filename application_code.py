@@ -1,8 +1,8 @@
+import threading
 import tkinter
 from tkinter import Tk, Canvas, StringVar, colorchooser
 from tkinter import messagebox as mbox
 from tkinter.ttk import Label, OptionMenu
-
 root = Tk()
 root.geometry("1280x720")
 root.title('Paint')
@@ -18,11 +18,25 @@ col = '#000000'
 
 def draw(event) -> None:
     size = choose_size.get()
-    if col:
-        canvas.create_oval((event.x - int(size) // 2, event.y - int(size) // 2),
-                           (event.x + int(size) // 2, event.y + int(size) // 2), fill=col, outline=col)
-    else:
-        mbox.showerror("Ошибка", "Выберите цвет для рисования!")
+    canvas.create_oval((event.x - int(size) // 2, event.y - int(size) // 2),
+        (event.x + int(size) // 2, event.y + int(size) // 2), fill=col, outline=col)
+
+    with open('export_massage', 'w') as file_write:
+        export_data = [col, str(size), str(event.x), str(event.y)]
+        file_write.write(' '.join(export_data))
+
+
+
+def import_drawing() -> None:
+    while True:
+        with open('import_massage', 'r') as file_read:
+            import_data = file_read.readline().split()
+            if import_data:
+                brush_color = import_data[0]
+                brush_size, x, y = list(map(int, import_data[1:]))
+
+                canvas.create_oval((x - brush_size // 2, y - brush_size // 2),
+                                   (x + brush_size // 2, y + brush_size // 2), fill=brush_color, outline=col)
 
 
 def fill() -> None:
@@ -66,5 +80,8 @@ size_label.place(x=900, y=10)
 size_list.place(x=950, y=35)
 canvas.place(x=0, y=70)
 cn.place(x=1000, y=35)
+
+t2 = threading.Thread(target=import_drawing)
+t2.start()
 
 root.mainloop()
