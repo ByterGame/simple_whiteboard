@@ -41,10 +41,7 @@ def import_drawing() -> None:
 
 def fill() -> None:
     global col
-    if col:
-        canvas.config(bg=col)
-    else:
-        mbox.showerror("Ошибка", "Выберите цвет заливки!")
+    canvas.config(bg=col)
 
 
 def delete() -> None:
