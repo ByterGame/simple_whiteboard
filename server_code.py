@@ -10,7 +10,7 @@ client_sock, client_addr = serv_sock.accept()
 client_connect = True
 
 
-def Wait_massage():
+def wait_massage():
     global client_connect
     while client_connect:
         data = client_sock.recv(1024)
@@ -22,7 +22,7 @@ def Wait_massage():
             print(data.decode())
 
 
-t2 = threading.Thread(target=Wait_massage)
+t2 = threading.Thread(target=wait_massage)
 t2.start()
 
 while client_connect:
@@ -34,7 +34,7 @@ while client_connect:
                     client_sock.sendall(line.encode())
                     client_connect = False
                     t2.join()
-                    Wait_massage()
+                    wait_massage()
                     break
                 else:
                     client_sock.sendall(line.encode())

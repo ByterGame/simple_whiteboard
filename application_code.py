@@ -66,6 +66,5 @@ size_label.place(x=900, y=10)
 size_list.place(x=950, y=35)
 canvas.place(x=0, y=70)
 cn.place(x=1000, y=35)
-root.mainloop()
 
 root.mainloop()

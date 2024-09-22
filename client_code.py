@@ -6,7 +6,7 @@ client_sock.connect(('127.0.0.1', 12345))
 connect = True
 
 
-def Wait_massage():
+def wait_massage():
     global connect
     while connect:
         data = client_sock.recv(1024)
@@ -18,7 +18,7 @@ def Wait_massage():
             print(data.decode())
 
 
-t2 = threading.Thread(target=Wait_massage)
+t2 = threading.Thread(target=wait_massage)
 t2.start()
 
 while connect:
@@ -30,7 +30,7 @@ while connect:
                     client_sock.sendall(line.encode())
                     connect = False
                     t2.join()
-                    Wait_massage()
+                    wait_massage()
                     break
                 else:
                     client_sock.sendall(line.encode())
