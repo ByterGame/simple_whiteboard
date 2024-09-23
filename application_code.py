@@ -23,20 +23,19 @@ def draw(event) -> None:
 
     with open('export_massage', 'a') as file_write:
         export_data = [col, str(size), str(event.x), str(event.y)]
-        file_write.write(' '.join(export_data))
-
+        file_write.write(' '.join(export_data) + '\n')
 
 
 def import_drawing() -> None:
     while True:
-        with open('import_massage', 'r') as file_read:
+        with open('import_massage', 'r+') as file_read:
             import_data = file_read.readline().split()
             if import_data:
                 brush_color = import_data[0]
                 brush_size, x, y = list(map(int, import_data[1:]))
-
+                print(x)
                 canvas.create_oval((x - brush_size // 2, y - brush_size // 2),
-                                   (x + brush_size // 2, y + brush_size // 2), fill=brush_color, outline=col)
+                                   (x + brush_size // 2, y + brush_size // 2), fill=brush_color, outline=brush_color)
 
 
 def fill() -> None:
@@ -78,8 +77,14 @@ size_list.place(x=950, y=35)
 canvas.place(x=0, y=70)
 cn.place(x=1000, y=35)
 
-t2 = threading.Thread(target=import_drawing)
+t2 = threading.Thread(target=import_drawing, daemon=True)
 t2.start()
 
 
 root.mainloop()
+
+with open('export_massage', 'w') as em:
+    em.write('close_socket')
+with open('import_massage', 'w') as im:
+    im.write('')
+
