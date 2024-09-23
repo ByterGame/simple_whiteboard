@@ -17,7 +17,7 @@ def Wait_massage():
                 break
             else:
                 with open('import_massage', 'a') as file_write:
-                    file_write.write(data.decode() + "\n")
+                    file_write.write(data.decode())
 
 
 t2 = threading.Thread(target=Wait_massage)
@@ -25,15 +25,14 @@ t2.start()
 
 while connect:
     with open('export_massage', 'r+') as file:
-        lines = file.readlines()
-        for line in lines:
-            if line != '':
-                if line == "close_socket":
-                    client_sock.sendall(line.encode())
-                    connect = False
-                    t2.join()
-                    Wait_massage()
-                    break
-                else:
-                    client_sock.sendall(line.encode())
-        file.truncate(0)
+        line = file.readline()
+        if line != '':
+            if line == "close_socket":
+                client_sock.sendall(line.encode())
+                client_connect = False
+                t2.join()
+                Wait_massage()
+                break
+            else:
+                client_sock.sendall(line.encode())
+                file.truncate(0)

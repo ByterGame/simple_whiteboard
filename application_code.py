@@ -21,7 +21,7 @@ def draw(event) -> None:
     canvas.create_oval((event.x - int(size) // 2, event.y - int(size) // 2),
         (event.x + int(size) // 2, event.y + int(size) // 2), fill=col, outline=col)
 
-    with open('export_massage', 'w') as file_write:
+    with open('export_massage', 'a') as file_write:
         export_data = [col, str(size), str(event.x), str(event.y)]
         file_write.write(' '.join(export_data))
 
@@ -80,5 +80,6 @@ cn.place(x=1000, y=35)
 
 t2 = threading.Thread(target=import_drawing)
 t2.start()
+
 
 root.mainloop()
