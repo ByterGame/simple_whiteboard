@@ -2,7 +2,7 @@ import socket
 import threading
 
 client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_sock.connect(('127.0.0.1', 12345))
+client_sock.connect(('Byter', 12345))
 connect = True
 
 
