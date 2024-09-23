@@ -45,7 +45,7 @@ def export_drawing(size, x, y, px, py) -> None:
     with open('export_massage', 'a') as import_file:
         export_data = [col, str(size), str(x), str(y), str(px), str(py)]
         export_string = (' '.join(export_data)+' '+'0'*15)[:30]
-        import_file.write(' '.join(export_string) + '\n')
+        import_file.write(export_string + '\n')
 
 
 def import_drawing() -> None:
