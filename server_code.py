@@ -37,13 +37,16 @@ t2.start()
 while client_connect:
     with open('export_massage', 'r+') as file:
         line = file.readline()
-        if line != '':
+        while line:
             if line == "close_socket":
                 client_sock.sendall(line.encode())
                 client_connect = False
+                clean_file("export_massage")
+                file.truncate(0)
                 t2.join()
                 Wait_massage()
-                clean_file("export_massage")
                 break
             else:
                 client_sock.sendall(line.encode())
+                line = file.readline()
+        file.truncate(0)
