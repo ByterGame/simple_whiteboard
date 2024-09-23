@@ -6,6 +6,11 @@ client_sock.connect(('127.0.0.1', 12345))
 connect = True
 
 
+def clean_file(file_name):
+    with open(file_name, 'w') as cf:
+        pass
+
+
 def Wait_massage():
     global connect
     while connect:
@@ -14,10 +19,11 @@ def Wait_massage():
             if data.decode() == "close_socket":
                 connect = False
                 client_sock.close()
+                clean_file("import_massage")
                 break
             else:
                 with open('import_massage', 'a') as file_write:
-                    file_write.write(data.decode())
+                    file_write.write(data.decode() + '\n')
 
 
 t2 = threading.Thread(target=Wait_massage)
@@ -32,7 +38,7 @@ while connect:
                 client_connect = False
                 t2.join()
                 Wait_massage()
+                clean_file("export_massage")
                 break
             else:
                 client_sock.sendall(line.encode())
-                file.truncate(0)
