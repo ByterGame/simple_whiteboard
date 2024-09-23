@@ -56,7 +56,7 @@ def import_drawing() -> None:
                 print(import_data)
                 if import_data:
                     brush_color = import_data[0]
-                    brush_size, x, y, px, py = list(map(int, import_data[1:7]))
+                    brush_size, x, y, px, py = list(map(int, import_data[1:6]))
                     canvas.create_polygon((x, y),
                                           (px, py), fill=brush_color, outline=brush_color,
                                           width=brush_size),
