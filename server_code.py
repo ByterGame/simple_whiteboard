@@ -4,12 +4,23 @@ import sys
 
 
 class Server:
+
+    def __init__(self):
+        self.serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0)
+        self.serv_sock.bind(('', 55555))
+        self.serv_sock.listen(10)
+        self.client_sock, client_addr = self.serv_sock.accept()
+        print('connect')
+        self.connect = True
+        threading.Thread(target=self.wait_message, daemon=True).start()
+        self.sand_message()
+
     def clean_file(self, file_name):
         open(file_name, 'w').close()
 
     def wait_message(self):
         while self.connect:
-            data = self.client_sock.recv(1024)
+            data = self.client_sock.recv(8192)
             if data:
                 if data.decode() == "close_socket":
                     self.connect = False
@@ -19,17 +30,6 @@ class Server:
                 else:
                     with open('import_message', 'a') as file_write:
                         file_write.write(data.decode() + '\n')
-
-    def __init__(self):
-        print(2)
-        self.serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0)
-        self.serv_sock.bind(('', 55550))
-        self.serv_sock.listen(10)
-        self.client_sock, client_addr = self.serv_sock.accept()
-        print('connect')
-        self.connect = True
-        threading.Thread(target=self.wait_message, daemon=True).start()
-        self.sand_message()
 
     def sand_message(self):
         while self.connect:
@@ -44,7 +44,7 @@ class Server:
                             self.client_sock.close()
                             break
                         else:
-                            self.client_sock.send(line.encode())
+                            self.client_sock.sendall(line.encode())
                             line = file.readline()
                     else:
                         break

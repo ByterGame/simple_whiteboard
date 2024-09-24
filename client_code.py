@@ -9,7 +9,7 @@ class Client:
 
     def wait_message(self):
         while self.connect:
-            data = self.client_sock.recv(1024)
+            data = self.client_sock.recv(8192)
             if data:
                 if data.decode() == "close_socket":
                     self.connect = False
@@ -22,7 +22,7 @@ class Client:
 
     def __init__(self, server_name):
         self.client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_sock.connect((server_name, 55550))
+        self.client_sock.connect((server_name, 55555))
         self.connect = True
         threading.Thread(target=self.wait_message, daemon=True).start()
         self.sand_message()
@@ -40,7 +40,7 @@ class Client:
                             self.client_sock.close()
                             break
                         else:
-                            self.client_sock.send(line.encode())
+                            self.client_sock.sendall(line.encode())
                             line = file.readline()
                     else:
                         break
