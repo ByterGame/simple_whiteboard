@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import Tk, Canvas, StringVar, colorchooser
 from tkinter import messagebox as mbox
 from tkinter.ttk import Label, OptionMenu
+from fnmatch import fnmatch
 
 root = Tk()
 root.geometry("1280x720")
@@ -44,23 +45,25 @@ def draw(event) -> None:
 def export_drawing(size, x, y, px, py) -> None:
     with open('export_massage', 'a') as import_file:
         export_data = [col, str(size), str(x), str(y), str(px), str(py)]
-        export_string = (' '.join(export_data)+' '+'0'*15)[:30]
+        export_string = (' '.join(export_data) + ' ' + '0' * 15)[:30]
         import_file.write(export_string + '\n')
 
 
 def import_drawing() -> None:
     while True:
         with open('import_massage', 'r+') as file_read:
-            import_data = file_read.readline().split()
+            import_string = file_read.readline().strip()
+            import_data = import_string.split()
             while import_data:
-                print(import_data)
-                if import_data:
-                    brush_color = import_data[0]
+                brush_color = import_data[0]
+                try:
                     brush_size, x, y, px, py = list(map(int, import_data[1:6]))
-                    canvas.create_polygon((x, y),
-                                          (px, py), fill=brush_color, outline=brush_color,
-                                          width=brush_size),
-                import_data = file_read.readline().split()
+                    canvas.create_polygon((x, y), (px, py), fill=brush_color, outline=brush_color,
+                                      width=brush_size)
+                except:
+                    pass
+                import_string = file_read.readline().strip()
+                import_data = import_string.split()
             file_read.truncate(0)
 
 
@@ -110,6 +113,6 @@ t2.start()
 root.mainloop()
 
 with open('export_massage', 'w') as em:
-    em.write('close_socket\n')
+    em.write('close_socket')
 with open('import_massage', 'w') as im:
     pass
