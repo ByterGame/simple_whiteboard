@@ -2,6 +2,7 @@ import threading
 import tkinter as tk
 from tkinter import Tk, Canvas, StringVar, colorchooser
 from tkinter.ttk import Label, OptionMenu, Button
+from fnmatch import fnmatch
 
 
 class ApplicationWindow:
@@ -9,6 +10,7 @@ class ApplicationWindow:
         self.root = Tk()
         self.root.geometry("1280x720")
         self.root.title('S1mple Whiteboard')
+        self.root.resizable(False, False)
 
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
@@ -66,13 +68,11 @@ class ApplicationWindow:
                 import_string = file_read.readline().strip()
                 import_data = import_string.split()
                 while import_data:
-                    brush_color = import_data[0]
-                    try:
+                    if fnmatch(import_string, "#* * * * * *"):
+                        brush_color = import_data[0]
                         brush_size, x, y, px, py = list(map(int, import_data[1:6]))
                         self.canvas.create_polygon((x, y), (px, py), fill=brush_color, outline=brush_color,
                                                    width=brush_size)
-                    finally:
-                        pass
                     import_string = file_read.readline().strip()
                     import_data = import_string.split()
                 file_read.truncate(0)
