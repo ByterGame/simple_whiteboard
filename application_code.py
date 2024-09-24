@@ -1,9 +1,7 @@
 import threading
 import tkinter as tk
 from tkinter import Tk, Canvas, StringVar, colorchooser
-from tkinter import messagebox as mbox
-from tkinter.ttk import Label, OptionMenu
-from fnmatch import fnmatch
+from tkinter.ttk import Label, OptionMenu, Button
 
 root = Tk()
 root.geometry("1280x720")
@@ -14,6 +12,7 @@ screen_height = root.winfo_screenheight()
 
 cn = Canvas(root, bg='black', height=20, width=80)
 canvas = Canvas(root, bg='white', height=screen_height, width=screen_width)
+canvas_data = []
 
 col = '#000000'
 prev_x, prev_y = 0, 0
@@ -59,8 +58,8 @@ def import_drawing() -> None:
                 try:
                     brush_size, x, y, px, py = list(map(int, import_data[1:6]))
                     canvas.create_polygon((x, y), (px, py), fill=brush_color, outline=brush_color,
-                                      width=brush_size)
-                except:
+                                          width=brush_size)
+                finally:
                     pass
                 import_string = file_read.readline().strip()
                 import_data = import_string.split()
@@ -90,16 +89,12 @@ color_btn = tk.ttk.Button(root, text='Выбрать цвет', command=color)
 clear_btn = tk.ttk.Button(root, text='Очистить всё', command=delete)
 fill_btn = tk.ttk.Button(root, text='Заливка', command=fill)
 size_label = tk.ttk.Label(root, text='Размер кисти')
-name_label = tk.ttk.Label(root, text='Название файла:')
-name_edit = tk.ttk.Entry()
 
 canvas.bind('<B1-Motion>', draw)
 canvas.bind("<ButtonRelease-1>", draw)
 canvas.bind('<Button-1>', draw)
 
 color_btn.place(x=1000, y=10)
-name_label.place(x=10, y=10)
-name_edit.place(x=110, y=10)
 clear_btn.place(x=240, y=40)
 fill_btn.place(x=240, y=10)
 size_label.place(x=900, y=10)
