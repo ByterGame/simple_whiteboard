@@ -8,7 +8,7 @@ class ApplicationWindow:
     def __init__(self):
         self.root = Tk()
         self.root.geometry("1280x720")
-        self.root.title('Paint')
+        self.root.title('S1mple Whiteboard')
 
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
@@ -27,9 +27,9 @@ class ApplicationWindow:
 
         self.root.mainloop()
 
-        with open('export_massage', 'w') as em:
+        with open('export_message', 'w') as em:
             em.write('close_socket')
-        with open('import_massage', 'w'):
+        with open('import_message', 'w'):
             pass
 
     def draw(self, event) -> None:
@@ -55,14 +55,14 @@ class ApplicationWindow:
             self.prev_x, self.prev_y = 0, 0
 
     def export_drawing(self, size, x, y, px, py) -> None:
-        with open('export_massage', 'a') as import_file:
+        with open('export_message', 'a') as import_file:
             export_data = [self.col, str(size), str(x), str(y), str(px), str(py)]
             export_string = (' '.join(export_data) + ' ' + '0' * 15)[:30]
             import_file.write(export_string + '\n')
 
     def import_drawing(self) -> None:
         while True:
-            with open('import_massage', 'r+') as file_read:
+            with open('import_message', 'r+') as file_read:
                 import_string = file_read.readline().strip()
                 import_data = import_string.split()
                 while import_data:
