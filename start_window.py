@@ -7,10 +7,6 @@ from client_code import Client
 from server_code import Server
 
 
-def start_application() -> None:
-    ApplicationWindow()
-
-
 class StartWindow:
     def __init__(self) -> None:
         self.root = Tk()
@@ -30,10 +26,7 @@ class StartWindow:
 
     def start_server(self) -> None:
         self.root.destroy()
-        t2 = threading.Thread(target=start_application)
-        t2.start()
-        Server()
-        t2.join()
+        ApplicationWindow(1, '')
 
     def start_client(self) -> None:
         self.server_btn.destroy()
@@ -45,7 +38,5 @@ class StartWindow:
         if self.host_name_edit.get():
             host_name = self.host_name_edit.get()
             self.root.destroy()
-            t2 = threading.Thread(target=start_application)
-            t2.start()
-            Client(host_name)
-            t2.join()
+            ApplicationWindow(0, host_name)
+
