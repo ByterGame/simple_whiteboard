@@ -24,16 +24,16 @@ class ApplicationWindow:
         self.choose_size = StringVar(self.root)
 
         self.spawn_buttons()
-
+        self.connect = False
         if mode:
-            self.serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0)
-            self.serv_sock.bind(('', 55555))
-            self.serv_sock.listen(1)
-            self.connect = False
+            self.server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0)
+            self.server_sock.bind(('', 55555))
+            self.server_sock.listen(1)
             threading.Thread(target=self.wait_connect).start()
         else:
             self.client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client_sock.connect((host_name, 55555))
+            self.connect = True
 
         threading.Thread(target=self.import_drawing, daemon=True).start()
 
@@ -41,17 +41,17 @@ class ApplicationWindow:
         self.on_close()
 
     def wait_connect(self) -> None:
-        self.serv_sock.accept()
+        self.client_sock, client_addr = self.server_sock.accept()
         self.connect = True
 
     def export_drawing(self, size, x, y, px, py) -> None:
-        export_data = (self.col, str(size), str(x), str(y), str(px), str(py))
+        export_data = [self.col, str(size), str(x), str(y), str(px), str(py)]
         self.client_sock.sendall(json.dumps(export_data).encode('utf-8'))
 
     def import_drawing(self) -> None:
         if self.connect:
             import_data = self.client_sock.recv(1024)
-            import_data = json.loads(import_data.decode('utf-8'))
+            import_data = json.loads(import_data, encoding='utf-8')
             brush_color = import_data[0]
             brush_size, x, y, px, py = import_data[1:]
             self.canvas.create_polygon((x, y), (px, py), fill=brush_color, outline=brush_color,
