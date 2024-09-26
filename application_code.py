@@ -5,6 +5,7 @@ from tkinter import Tk, Canvas, StringVar, colorchooser
 from tkinter.ttk import Label, OptionMenu, Button
 from fnmatch import fnmatch
 import socket
+import sys
 
 
 class ApplicationWindow:
@@ -46,21 +47,16 @@ class ApplicationWindow:
 
     def export_drawing(self, size, x, y, px, py) -> None:
         export_data = (self.col, str(size), str(x), str(y), str(px), str(py))
-        self.client_sock.sendall(json.dumps(export_data).encode())
+        export_data = (json.dumps(export_data)).ljust(60)
+        self.client_sock.send(export_data.encode())
 
     def import_drawing(self) -> None:
         while True:
             if self.connect:
-                import_data = self.client_sock.recv(100000).decode().split('\n')
-                threading.Thread(target=self.draw_import_points(import_data)).start()
+                import_data = json.loads(self.client_sock.recv(60).decode())
+                brush_color = import_data[0]
+                brush_size, x, y, px, py = import_data[1:]
 
-    def draw_import_points(self, import_data) -> None:
-        for line in import_data:
-            print(line.strip())
-            if fnmatch(line.strip(), '[[]*[]]'):
-                line = json.loads(line)
-                brush_color = line[0]
-                brush_size, x, y, px, py = line[1:]
                 self.canvas.create_polygon((x, y), (px, py), fill=brush_color, outline=brush_color,
                                            width=brush_size)
 
