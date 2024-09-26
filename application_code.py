@@ -7,37 +7,62 @@ from fnmatch import fnmatch
 
 class ApplicationWindow:
     def __init__(self):
-
         self.root = Tk()
-        self.load_ui()
+        self.root.geometry("1280x720")
+        self.root.title('S1mple Whiteboard')
+        self.root.resizable(False, False)
 
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
 
+        self.cn = Canvas(self.root, bg='black', height=20, width=80)
         self.canvas = Canvas(self.root, bg='white', height=self.screen_height, width=self.screen_width)
-        self.color_canvas = Canvas(self.root, bg='black', height=20, width=80)
 
         self.col = '#000000'
         self.prev_x, self.prev_y = 0, 0
 
         self.choose_size = StringVar(self.root)
-
         self.spawn_buttons()
 
         t2 = threading.Thread(target=self.import_drawing, daemon=True)
         t2.start()
 
         self.root.mainloop()
-        self.on_close()
+
+        with open('export_message', 'w') as em:
+            em.write('close_socket')
+        with open('import_message', 'w'):
+            pass
+
+    def draw(self, event) -> None:
+        size = self.choose_size.get()
+        x, y = event.x, event.y
+        dist = ((x - self.prev_x) ** 2 + (y - self.prev_y) ** 2) ** 0.5
+        if (self.prev_x + self.prev_y != 0) and dist > 5:
+            self.canvas.create_polygon((x, y),
+                                       (self.prev_x, self.prev_y), fill=self.col, outline=self.col, width=size)
+
+            self.export_drawing(size, x, y, self.prev_x, self.prev_y)
+            self.prev_x, self.prev_y = x, y
+
+        elif (self.prev_x + self.prev_y) == 0:
+            self.prev_x, self.prev_y = x, y
+            self.canvas.create_polygon((x, y),
+                                       (self.prev_x, self.prev_y), fill=self.col, outline=self.col,
+                                       width=str(int(size) * 0.5))
+
+            self.export_drawing(size, x, y, self.prev_x, self.prev_y)
+
+        if event.type == "5":
+            self.prev_x, self.prev_y = 0, 0
 
     def export_drawing(self, size, x, y, px, py) -> None:
-
         with open('export_message', 'a') as import_file:
             export_data = [self.col, str(size), str(x), str(y), str(px), str(py)]
             export_string = (' '.join(export_data) + ' ' + '0' * 15)[:30]
+            import_file.write(export_string + '\n')
 
     def import_drawing(self) -> None:
-
         while True:
             with open('import_message', 'r+') as file_read:
                 import_string = file_read.readline().strip()
@@ -46,57 +71,22 @@ class ApplicationWindow:
                     if fnmatch(import_string, "#* * * * * *"):
                         brush_color = import_data[0]
                         brush_size, x, y, px, py = list(map(int, import_data[1:6]))
-
                         self.canvas.create_polygon((x, y), (px, py), fill=brush_color, outline=brush_color,
                                                    width=brush_size)
                     import_string = file_read.readline().strip()
                     import_data = import_string.split()
                 file_read.truncate(0)
 
-    def draw(self, event) -> None:
-
-        size = int(self.choose_size.get())
-        x, y = event.x, event.y
-        dist = ((x - self.prev_x) ** 2 + (y - self.prev_y) ** 2) ** 0.5
-
-        if (self.prev_x + self.prev_y != 0) and dist > 5:
-            self.canvas.create_polygon((x, y),
-                                       (self.prev_x, self.prev_y), fill=self.col, outline=self.col,
-                                       width=size)
-
-            self.export_drawing(size, x, y, self.prev_x, self.prev_y)
-            self.prev_x, self.prev_y = x, y
-
-        elif (self.prev_x + self.prev_y) == 0:
-            self.prev_x, self.prev_y = x, y
-            self.canvas.create_oval((x, y),
-                                    (x, y), fill=self.col, outline=self.col,
-                                    width=size * 0.85)
-
-        self.export_drawing(size, x, y, self.prev_x, self.prev_y)
-
-        if event.type == "5":
-            self.prev_x, self.prev_y = 0, 0
-
     def fill(self) -> None:
-
         self.canvas.config(bg=self.col)
 
     def delete(self) -> None:
-
         self.canvas.config(bg='white')
         self.canvas.delete("all")
 
     def color(self) -> None:
-
         self.col = str(colorchooser.askcolor()[1])
-        self.color_canvas.config(bg=self.col)
-
-    def load_ui(self) -> None:
-
-        self.root.geometry("1280x720")
-        self.root.title('S1mple Whiteboard')
-        self.root.resizable(False, False)
+        self.cn.config(bg=self.col)
 
     def spawn_buttons(self) -> None:
 
@@ -116,10 +106,4 @@ class ApplicationWindow:
         size_label.place(x=900, y=10)
         size_list.place(x=950, y=35)
         self.canvas.place(x=0, y=70)
-        self.color_canvas.place(x=1000, y=35)
-
-    def on_close(self) -> None:
-        with open('export_message', 'w') as em:
-            em.write('close_socket')
-        with open('import_message', 'w'):
-            pass
+        self.cn.place(x=1000, y=35)
