@@ -3,8 +3,6 @@ import tkinter as tk
 from tkinter import Tk
 from tkinter.ttk import Button
 from application_code import ApplicationWindow
-from client_code import Client
-from server_code import Server
 
 
 class StartWindow:
@@ -40,3 +38,5 @@ class StartWindow:
             self.root.destroy()
             ApplicationWindow(0, host_name)
 
+
+StartWindow()

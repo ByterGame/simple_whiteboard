@@ -45,17 +45,24 @@ class ApplicationWindow:
         self.connect = True
 
     def export_drawing(self, size, x, y, px, py) -> None:
-        export_data = [self.col, str(size), str(x), str(y), str(px), str(py)]
-        self.client_sock.sendall(json.dumps(export_data).encode('utf-8'))
+        export_data = (self.col, str(size), str(x), str(y), str(px), str(py))
+        self.client_sock.sendall(json.dumps(export_data).encode())
 
     def import_drawing(self) -> None:
-        if self.connect:
-            import_data = self.client_sock.recv(1024)
-            import_data = json.loads(import_data, encoding='utf-8')
-            brush_color = import_data[0]
-            brush_size, x, y, px, py = import_data[1:]
-            self.canvas.create_polygon((x, y), (px, py), fill=brush_color, outline=brush_color,
-                                       width=brush_size)
+        while True:
+            if self.connect:
+                import_data = self.client_sock.recv(100000).decode().split('\n')
+                threading.Thread(target=self.draw_import_points(import_data)).start()
+
+    def draw_import_points(self, import_data) -> None:
+        for line in import_data:
+            print(line.strip())
+            if fnmatch(line.strip(), '[[]*[]]'):
+                line = json.loads(line)
+                brush_color = line[0]
+                brush_size, x, y, px, py = line[1:]
+                self.canvas.create_polygon((x, y), (px, py), fill=brush_color, outline=brush_color,
+                                           width=brush_size)
 
     def draw(self, event) -> None:
         size = int(self.choose_size.get())
@@ -115,9 +122,3 @@ class ApplicationWindow:
         size_list.place(x=950, y=35)
         self.canvas.place(x=0, y=70)
         self.color_canvas.place(x=1000, y=35)
-
-    def on_close(self) -> None:
-        with open('export_message', 'w') as em:
-            em.write('close_socket')
-        with open('import_message', 'w'):
-            pass
