@@ -6,8 +6,6 @@ from tkinter.ttk import Label, OptionMenu, Button
 from tkinter import messagebox as mb
 import socket
 import time
-from PIL import Image
-from io import BytesIO
 
 
 class ApplicationWindow:
@@ -43,9 +41,9 @@ class ApplicationWindow:
         threading.Thread(target=self.import_drawing, daemon=True).start()
 
         self.root.mainloop()
+
         if self.connect:
             self.connect = False
-            self.export_drawing([3])
             if mode:
                 self.server_sock.close()
             else:
@@ -73,11 +71,10 @@ class ApplicationWindow:
                         case 2:
                             self.canvas.config(bg='white')
                             self.canvas.delete("all")
-                        case 3:
-                            self.connect = False
-                            mb.showinfo('Оповещение', 'Клиент или сервер разорвал соединение!')
-                            self.root.destroy()
                 except WindowsError:
+                    self.connect = False
+                    mb.showinfo('Оповещение', 'Клиент или сервер разорвал соединение!')
+                    self.root.destroy()
                     pass
             else:
                 time.sleep(0.05)
