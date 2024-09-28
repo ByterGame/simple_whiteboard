@@ -3,6 +3,7 @@ import threading
 import tkinter as tk
 from tkinter import Tk, Canvas, StringVar, colorchooser
 from tkinter.ttk import Label, OptionMenu, Button
+from tkinter import messagebox as mb
 import socket
 import time
 from PIL import Image
@@ -33,15 +34,22 @@ class ApplicationWindow:
             self.server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0)
             self.server_sock.bind(('', 55555))
             self.server_sock.listen(1)
-            threading.Thread(target=self.wait_connect).start()
+            threading.Thread(target=self.wait_connect, daemon=True).start()
         else:
             self.client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client_sock.connect((host_name, 55555))
             self.connect = True
 
-        threading.Thread(target=self.import_drawing).start()
+        threading.Thread(target=self.import_drawing, daemon=True).start()
 
         self.root.mainloop()
+        if self.connect:
+            self.connect = False
+            self.export_drawing([3])
+            if mode:
+                self.server_sock.close()
+            else:
+                self.client_sock.close()
 
     def wait_connect(self) -> None:
         self.client_sock, client_addr = self.server_sock.accept()
@@ -54,16 +62,23 @@ class ApplicationWindow:
     def import_drawing(self) -> None:
         while True:
             if self.connect:
-                import_data = json.loads(self.client_sock.recv(60).decode())
-                event = import_data[0]
-                match event:
-                    case 0:
-                        self.draw(*import_data[1:])
-                    case 1:
-                        self.canvas.config(bg=import_data[1])
-                    case 2:
-                        self.canvas.config(bg='white')
-                        self.canvas.delete("all")
+                try:
+                    import_data = json.loads(self.client_sock.recv(60).decode())
+                    event = import_data[0]
+                    match event:
+                        case 0:
+                            self.draw(*import_data[1:])
+                        case 1:
+                            self.canvas.config(bg=import_data[1])
+                        case 2:
+                            self.canvas.config(bg='white')
+                            self.canvas.delete("all")
+                        case 3:
+                            self.connect = False
+                            mb.showinfo('Оповещение', 'Клиент или сервер разорвал соединение!')
+                            self.root.destroy()
+                except WindowsError:
+                    pass
             else:
                 time.sleep(0.05)
 
