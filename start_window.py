@@ -10,11 +10,10 @@ class StartWindow:
         self.root = Tk()
         self.root.geometry("350x128")
         self.root.title('S1mple Whiteboard')
-        self.root.resizable(False, False)
 
         self.server_btn = tk.ttk.Button(self.root, text='Захостить', command=self.start_server)
         self.client_btn = tk.ttk.Button(self.root, text='Подключиться', command=self.start_client)
-        self.host_name_edit = tk.ttk.Entry(font=("Calibri 16"))
+        self.host_name_edit = tk.ttk.Entry(font="Calibri 18")
         self.connect_btn = tk.ttk.Button(self.root, text='Подключиться', command=self.connect)
 
         self.server_btn.grid(row=0, column=0, ipadx=50, ipady=50)
