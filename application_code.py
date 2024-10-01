@@ -9,7 +9,7 @@ import time
 
 
 class ApplicationWindow:
-    def __init__(self, mode: int, host_name: str) -> None:
+    def __init__(self, mode: int) -> None:
         self.root = Tk()
         self.load_ui()
 
@@ -28,17 +28,31 @@ class ApplicationWindow:
 
         self.connect = False
 
+        self.server_ip = None
+
         if mode:
-            self.server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0)
-            self.server_sock.bind(('', 55555))
+            self.server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_sock.bind(('', 53210))
             self.server_sock.listen(1)
-            threading.Thread(target=self.wait_connect, daemon=True).start()
+            threading.Thread(target=self.serv_connect, daemon=True).start()
         else:
             self.client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.client_sock.connect((host_name, 55555))
-            self.connect = True
+            udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            udp_sock.bind(('', 37021))
 
-        threading.Thread(target=self.import_drawing, daemon=True).start()
+            while not self.server_ip:
+                data, addr = udp_sock.recvfrom(1024)
+                message = data.decode('utf-8')
+                if message.startswith('SERVER_IP:'):
+                    self.server_ip = message.split(':')[1]
+                    print(message)
+                    time.sleep(1)
+
+            if self.server_ip:
+                self.client_sock.connect((self.server_ip, 53210))
+                self.connect = True
+                threading.Thread(target=self.import_drawing, daemon=True).start()
 
         self.root.mainloop()
 
@@ -49,9 +63,32 @@ class ApplicationWindow:
             else:
                 self.client_sock.close()
 
-    def wait_connect(self) -> None:
+    def serv_connect(self) -> None:
+        self.broadcast_event = threading.Event()
+
+        self.broadcast_thread = threading.Thread(target=self.broadcast_ip, daemon=True)
+        self.broadcast_thread.start()
+
         self.client_sock, client_addr = self.server_sock.accept()
         self.connect = True
+        threading.Thread(target=self.import_drawing, daemon=True).start()
+        time.sleep(1)
+
+        self.broadcast_event.set()
+
+        if self.broadcast_thread.is_alive():
+            self.broadcast_thread.join()
+
+    def broadcast_ip(self):
+        broadcast_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        broadcast_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        server_ip = socket.gethostbyname(socket.gethostname())
+        broadcast_message = f'SERVER_IP:{server_ip}'.encode('utf-8')
+
+        while not self.broadcast_event.is_set():
+            broadcast_sock.sendto(broadcast_message, ('<broadcast>', 37021))
+            print(f'Broadcasting server IP: {server_ip}')
+            self.broadcast_event.wait(1)
 
     def export_drawing(self, data: list) -> None:
         export_data = (json.dumps(data)).ljust(60)
@@ -81,7 +118,7 @@ class ApplicationWindow:
 
     def on_click(self, event: tk.Event, btn: int) -> None:
         size = int(self.choose_size.get())
-        if btn == 0:
+        if not btn:
             col = self.col
         else:
             col = self.canvas["background"]
