@@ -8,6 +8,7 @@ class StartWindow:
     def __init__(self) -> None:
         self.root = Tk()
         self.root.geometry("350x128")
+        self.root.resizable(False, False)
         self.root.title('S1mple Whiteboard')
 
         self.server_btn = tk.ttk.Button(self.root, text='Захостить', command=self.start_server)
